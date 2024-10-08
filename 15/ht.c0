@@ -1,0 +1,84 @@
+int hash(key k);
+
+bool key_equal(key k1, key k2);
+
+key elem_key(elem e)
+//@requires e != NULL;
+  ;
+
+
+struct chain_node {
+  elem data;
+  struct chain_node* next;
+};
+typedef struct chain_node chain;
+
+struct ht_header {
+  chain*[] table;
+  int m;     // m = capacity = maximum number of chains table can hold
+  int n;     // n = size = number of elements stored in hash table
+};
+typedef struct ht_header* ht;
+
+bool is_ht(ht H) {
+  if (H == NULL) return false;
+  if (!(H->m > 0)) return false;
+  if (!(H->n >= 0)) return false;
+  //@assert H->m == \length(H->table);
+
+  int nodecount = 0;
+
+  for (int i = 0; i < H->m; i++)
+  {
+    // set p equal to a pointer to first node
+    // of chain i in table, if any
+
+    chain* p = H->table[i];
+
+    while (p != NULL)
+    {
+      elem e = p->data;
+
+      if ((e == NULL) || (abs(hash(elem_key(e)) % H->m) != i))
+
+        return false;
+
+      nodecount++;
+
+      if (nodecount > H->n)
+
+        return false;
+
+      p = p->next;
+
+    }
+  }
+
+  if (nodecount != H->n)
+
+    return false;
+
+  return true;
+}
+
+elem ht_lookup(ht H, key k)
+//@requires is_ht(H);
+/*@ensures \result == NULL
+
+           || key_equal(k, elem_key(\result));
+@*/
+{
+  int i = abs(hash(k) % H->m);
+  chain* p = H->table[i];
+  while (p != NULL)
+  //@loop_invariant is_chain(p, i, H->m);
+  {
+    //@assert p->data != NULL;
+    if (key_equal(elem_key(p->data), k))
+      return p->data;
+    else
+      p = p->next;
+  }
+  /* not in chain */
+  return NULL;
+}

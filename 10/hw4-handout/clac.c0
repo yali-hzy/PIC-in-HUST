@@ -1,0 +1,195 @@
+/*
+ * Clac, stack-based calculator language
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+#use <string>
+#use <parse>
+#use <conio>
+#use <args>
+#use <util>
+
+/* Return true: clac top-level interpreter will expect more input */
+/* Return false: clac top-level interpreter will exit */
+bool eval(queue Q, stack S)
+//@ensures \result == false || queue_empty(Q);
+{
+  while (!queue_empty(Q)) {
+    string tok = deq(Q);
+    // print("Read: "); print(tok); print("\n");
+    if (string_equal(tok, "print")) {
+      if (!stack_empty(S))
+      {
+        int x = pop(S);
+        printint(x); print("\n");
+      } else
+        error("Stack empty!");
+    } else if (string_equal(tok, "quit")) {
+      return false;             /* do not continue */
+    } else if (string_equal(tok, "drop")) {
+      if (!stack_empty(S))
+        pop(S);
+      else
+        error("Stack Empty!");
+    } else if (string_equal(tok, "swap")) {
+      int x = 0;
+      int y = 0;
+      if (!stack_empty(S)) {
+        y = pop(S);
+        if (!stack_empty(S))
+          x = pop(S);
+        else 
+          error("Stack Elements Insufficient!");
+      } else
+        error("Stack Elements Insufficient!");
+      push(S, y);
+      push(S, x);
+    } else if (string_equal(tok, "dup")) {
+      if (!stack_empty(S)) {
+        int x = pop(S);
+        push(S, x);
+        push(S, x);
+      }
+      else
+        error("Stack Empty!");
+    } else if (string_equal(tok, "rot")) {
+      int x = 0;
+      int y = 0;
+      int z = 0;
+      if (!stack_empty(S)) {
+        z = pop(S);
+        if (!stack_empty(S)) {
+          y = pop(S);
+          if (!stack_empty(S))
+            x = pop(S);
+          else
+            error("Stack Elements Insufficient!");
+        } else
+          error("Stack Elements Insufficient!");
+      } else
+        error("Stack Elements Insufficient!");
+      push(S, y);
+      push(S, z);
+      push(S, x);
+    } else if (string_equal(tok, "+") || string_equal(tok, "-")
+            || string_equal(tok, "*") || string_equal(tok, "/")
+            || string_equal(tok, "%") || string_equal(tok, "<")
+            || string_equal(tok, "^")) {
+      int x = 0;
+      int y = 0;
+      if (!stack_empty(S)) {
+        y = pop(S);
+        if (!stack_empty(S))
+          x = pop(S);
+        else 
+          error("Stack Elements Insufficient!");
+      } else
+        error("Stack Elements Insufficient!");
+      if ((string_equal(tok, "/") || string_equal(tok, "%")) && 
+           x == int_min() && y == -1)
+        error("Overflow!");
+      if (string_equal(tok, "+"))
+        push(S, x + y);
+      else if (string_equal(tok, "-"))
+        push(S, x - y);
+      else if (string_equal(tok, "*"))
+        push(S, x * y);
+      else if (string_equal(tok, "/"))
+        push(S, x / y);
+      else if (string_equal(tok, "%"))
+        push(S, x % y);
+      else if (string_equal(tok, "<")) {
+        if (x < y)
+          push(S, 1);
+        else
+          push(S, 0);
+      }
+      else if (string_equal(tok, "^")) {
+        if(y < 0 || x == 0 && y == 0)
+          error("Value Error");
+        int s = 1;
+        for (int i = 1; i <= y; i++)
+          if (x != 0 && s * x / x != s)
+            error("Overflow!");
+          else
+            s *= x;
+        push(S, s);
+      }
+    } else if (string_equal(tok, "skip")) {
+      int n = -1;
+      if (!stack_empty(S)) {
+        n = pop(S);
+      } else
+        error("Stack Empty!");
+      if (n < 0)
+        error("Top Negative");
+      for (int i = 1; i <= n; i++)
+        if (!queue_empty(Q))
+          deq(Q);
+        else
+          error("Queue Elements Insufficient!");
+    } else if (string_equal(tok, "if")) {
+      int n = -1;
+      if (!stack_empty(S)) {
+        n = pop(S);
+      } else
+        error("Stack Empty!");
+      int x = -1;
+      if (n != 0)
+        x = 0;
+      else
+        x = 2;
+      //@assert x != -1;
+      for (int i = 1; i <= x; i++)
+        if (!queue_empty(Q))
+          deq(Q);
+        else
+          error("Queue Elements Insufficient!");
+    } else if (string_equal(tok, "else")) {
+      if (!queue_empty(Q))
+        deq(Q);
+      else
+        error("Queue Elements Insufficient!");
+    } else if (string_equal(tok, "pick")) {
+      int n = -1;
+      if (!stack_empty(S)) {
+        n = pop(S);
+      } else
+        error("Stack Empty!");
+      if (n <= 0)
+        error("Top Not Positive");
+      stack tmp = stack_new();
+      for (int i = 1; i <= n; i++)
+        if (!stack_empty(S))
+          push(tmp, pop(S));
+        else
+          error("Stack Elements Insufficient!");
+      int xn = pop(tmp);
+      push(S, xn);
+      while (!stack_empty(tmp))
+        push(S, pop(tmp));
+      push(S, xn);
+    } else if (string_equal(tok, "abs")) {
+      int x = -1;
+      if (!stack_empty(S)) {
+        x = pop(S);
+      } else
+        error("Stack Empty!");
+      if (x == int_min())
+        error("Overflow");
+      if (x < 0)
+        x = -x;
+      push(S, x);
+    } else {
+      /* not defined as an operation name, should be an int */
+      int* p = parse_int(tok, 10);
+      if (p == NULL) { /* not an int */
+        /* call error(msg) which prints msg and aborts */
+        error(string_join("undefined token ", tok));
+      }
+      push(S, *p);
+    }
+  }
+  return true;                  /* continue */
+}

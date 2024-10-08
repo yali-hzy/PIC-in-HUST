@@ -1,0 +1,29 @@
+#use <parse>
+#use <string>
+
+string hex_digit2string(int x)
+//@requires 0 <= x && x < 16;
+//@ensures *parse_int(\result,16) == x;
+{
+    int ord0 = char_ord('0');
+    int ordA = char_ord('A');
+    int ord = ord0 + x;
+    if (x > 9)
+        ord += ordA - (ord0 + 10);
+    //@assert char_ord('0') <= ord && ord <= char_ord('9') || char_ord('A') <= ord && ord <= char_ord('F'); 
+    return string_fromchar(char_chr(ord));
+}
+
+string int2hex(int x)
+//@ensures *parse_int(\result,16) == x;
+{
+    string hex_string = "";
+    int a = x;
+    for (int i = 0; i < 8; i++)
+    {
+        int d = a & 0xF;
+        hex_string = string_join(hex_digit2string(d), hex_string);
+        a >>= 4;
+    }
+    return hex_string;
+}

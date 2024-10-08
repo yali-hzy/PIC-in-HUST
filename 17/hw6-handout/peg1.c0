@@ -1,0 +1,104 @@
+/*
+ * Peg solitaire solver
+ *
+ * 15-122 Principles of Imperative Computation */
+
+#use <args>
+#use <conio>
+#use <util>
+
+typedef int move;
+
+int row_start(move m)
+  ;
+
+int col_start(move m)
+  ;
+
+int row_end(move m)
+  ;
+
+int col_end(move m)
+  ;
+
+int peg_solve(board B, stack S)
+//@requires is_board(B);
+//@requires num_pegs(B) >= 1;
+//@requires stack_empty(S);
+//@ensures is_board(B);
+//@ensures \result >= 1;
+  ;
+
+int row_start(move m) {
+  return m&0xFF;
+}
+int col_start(move m) {
+  return (m>>8)&0xFF;
+}
+int row_end(move m) {
+  return (m>>16)&0xFF;
+}
+int col_end(move m) {
+  return (m>>24)&0xFF;
+}
+
+stack all_possible_moves(board B) 
+//@requires is_board(B);
+{
+  int[] dr = alloc_array(int, 4);
+  int[] dc = alloc_array(int, 4);
+  dr[0] = 0; dr[1] = 0; dr[2] = 1; dr[3] = -1;
+  dc[0] = 1; dc[1] = -1; dc[2] = 0; dc[3] = 0;
+  stack S = stack_new();
+  for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 8; j++)
+      if (B[i * 8 + j] == 1) // (i, j) is a peg
+      {
+        for (int d = 0; d < 4; d++) {
+          int row1 = i;
+          int col1 = j;
+          int row2 = i + dr[d];
+          int col2 = j + dc[d];
+          int row3 = i + 2*dr[d];
+          int col3 = j + 2*dc[d];
+          if (0 <= row2 && row2 < 8 && 0 <= col2 && col2 < 8 &&
+              0 <= row3 && row3 < 8 && 0 <= col3 && col3 < 8 &&
+              B[row2*8+col2] == 1 && B[row3*8+col3] == 0) {
+            move M = row1 | (col1 << 8) | (row3 << 16) | (col3 << 24);
+            push(S, M);
+          }
+        }
+      }
+  return S;
+}
+
+int solve(board B, stack S, int num_pegs)
+{
+  stack moves = all_possible_moves(B);
+  if (stack_empty(moves)) {
+    return num_pegs;
+  }
+  move M = pop(moves);
+  int row1 = row_start(M);
+  int col1 = col_start(M);
+  int row3 = row_end(M);
+  int col3 = col_end(M);
+  int row2 = (row1 + row3) >> 1;
+  int col2 = (col1 + col3) >> 1;
+  B[row1*8+col1] = 0;
+  B[row2*8+col2] = 0;
+  B[row3*8+col3] = 1;
+  int result = solve(B, S, num_pegs - 1);
+  push(S, M);
+  return result;
+}
+
+int peg_solve(board B, stack S)
+//@requires is_board(B);
+//@requires num_pegs(B) >= 1;
+//@requires stack_empty(S);
+//@ensures is_board(B);
+//@ensures \result >= 1;
+{
+  return solve(B, S, num_pegs(B));
+}

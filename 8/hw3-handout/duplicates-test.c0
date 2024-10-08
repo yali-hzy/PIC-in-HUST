@@ -1,0 +1,39 @@
+#use <string>
+
+int main()
+{
+    // Test #1
+    string[] A = alloc_array(string, 8);
+    A[0] = "apple";
+    A[1] = "apple";
+    A[2] = "apple";
+    A[3] = "banana";
+    A[4] = "orange";
+    A[5] = "orange";
+    A[6] = "pear";
+    A[7] = "tomato";
+    assert(!all_distinct(A, 8));
+    assert(count_distinct(A, 8) == 5);
+    string[] B = remove_duplicates(A, 8);
+    //@assert \length(B) == 5;
+    assert(string_equal(B[0], "apple"));
+    assert(string_equal(B[1], "banana"));
+    assert(string_equal(B[2], "orange"));
+    assert(string_equal(B[3], "pear"));
+    assert(string_equal(B[4], "tomato"));
+
+    // Test #2
+    assert(all_distinct(A, 0));
+    assert(count_distinct(A, 0) == 0);
+    B = remove_duplicates(A, 0);
+    //@assert \length(B) == 0;
+
+    // Test #3
+    assert(all_distinct(A, 1));
+    assert(count_distinct(A, 1) == 1);
+    B = remove_duplicates(A, 1);
+    //@assert \length(B) == 1;
+    assert(string_equal(B[0], "apple"));
+
+    return 0;
+}

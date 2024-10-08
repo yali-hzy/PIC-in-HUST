@@ -1,0 +1,89 @@
+#use <rand>
+#use <util>
+
+int main()
+{
+    // Test #1
+    string[] Z = alloc_array(string, 0);
+    sort(Z, 0, 0);
+    assert(is_sorted(Z, 0, 0));
+
+    // Test #2
+    string[] One = alloc_array(string, 1);
+    One[0] = "one";
+    sort(One, 0, 1);
+    assert(is_sorted(One, 0, 1));
+    assert(string_equal(One[0], "one"));
+
+    // Test #3
+    string[] Asc = alloc_array(string, 5);
+    Asc[0] = "A"; Asc[1] = "C"; Asc[2] = "F"; Asc[3] = "M"; Asc[4] = "X";
+    sort(Asc, 0, 5);
+    assert(string_equal(Asc[0], "A"));
+    assert(string_equal(Asc[1], "C"));
+    assert(string_equal(Asc[2], "F"));
+    assert(string_equal(Asc[3], "M"));
+    assert(string_equal(Asc[4], "X"));
+
+    // Test #4
+    string[] Dec = alloc_array(string, 5);
+    Dec[0] = "Y"; Dec[1] = "O"; Dec[2] = "M"; Dec[3] = "G"; Dec[4] = "D";
+    sort(Dec, 1, 4);
+    assert(string_equal(Dec[0], "Y"));
+    assert(string_equal(Dec[1], "G"));
+    assert(string_equal(Dec[2], "M"));
+    assert(string_equal(Dec[3], "O"));
+    assert(string_equal(Dec[4], "D"));
+
+    // Test #5
+    string[] Dup = alloc_array(string, 4);
+    Dup[0] = "B"; Dup[1] = "G"; Dup[2] = "B"; Dup[3] = "Z";
+    sort(Dup, 0, 4);
+    assert(string_equal(Dup[0], "B"));
+    assert(string_equal(Dup[1], "B"));
+    assert(string_equal(Dup[2], "G"));
+    assert(string_equal(Dup[3], "Z"));
+
+    // Test #6
+    rand_t gen = init_rand(19491001);
+    int n = 1000;
+    for (int i = 1; i <= 10; i++)
+    {
+        string[] A = alloc_array(string, n);
+        string[] copy = alloc_array(string, n);
+        for (int j = 0; j < n; j++)
+        {
+            int len = abs(rand(gen))%5+2;
+            char[] chr_arr = alloc_array(char, len);
+            for (int k = 0; k < len - 1; k++)
+                chr_arr[k] = char_chr(abs(rand(gen))%26 + char_ord('A'));
+            chr_arr[len - 1] = '\0';
+            A[j] = string_from_chararray(chr_arr);
+        }
+        for (int j = 1; j <= 5; j++)
+        {
+            for (int k = 0; k < n; k++)
+                copy[k] = A[k];
+            int l = abs(rand(gen)) % (n+1);
+            int r = abs(rand(gen)) % (n+1);
+            if (l > r)
+            {
+                int tmp = l;
+                l = r;
+                r = tmp;
+            }
+            sort(A, l, r);
+            assert(is_sorted(A, l, r));
+            for (int k = 0; k < l; k++)
+                assert(string_equal(A[k], copy[k]));
+            for (int k = r; k < n; k++)
+                assert(string_equal(A[k], copy[k]));
+            for (int k = l; k < r; k++)
+            {
+                assert(is_in(A[k], copy, l, r));
+                assert(is_in(copy[k], A, l, r));
+            }
+        }
+    }
+    return 0;
+}

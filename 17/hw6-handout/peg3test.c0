@@ -1,0 +1,208 @@
+/*
+ * Peg solitaire solver
+ *
+ * 15-122 Principles of Imperative Computation */
+
+#use <args>
+#use <conio>
+#use <util>
+
+/*
+ * Copy here your code from peg2.c0 to start
+ */
+
+typedef int move;
+
+int row_start(move m)
+  ;
+
+int col_start(move m)
+  ;
+
+int row_end(move m)
+  ;
+
+int col_end(move m)
+  ;
+
+int peg_solve(board B, stack S)
+//@requires is_board(B);
+//@requires num_pegs(B) >= 1;
+//@requires stack_empty(S);
+//@ensures is_board(B);
+//@ensures \result >= 1;
+  ;
+
+int row_start(move m) {
+  return m&0xFF;
+}
+int col_start(move m) {
+  return (m>>8)&0xFF;
+}
+int row_end(move m) {
+  return (m>>16)&0xFF;
+}
+int col_end(move m) {
+  return (m>>24)&0xFF;
+}
+
+stack all_possible_moves(board B, int[] dr, int[] dc) 
+//@requires is_board(B);
+{
+  stack S = stack_new();
+  for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 8; j++)
+      if (B[i * 8 + j] == 1) // (i, j) is a peg
+        for (int d = 0; d < 4; d++) {
+          int row1 = i;
+          int col1 = j;
+          int row2 = i + dr[d];
+          int col2 = j + dc[d];
+          int row3 = i + 2*dr[d];
+          int col3 = j + 2*dc[d];
+          if (0 <= row3 && row3 < 8 && 0 <= col3 && col3 < 8 &&
+              B[(row2<<3)|col2] == 1 && B[(row3<<3)|col3] == 0) {
+            move M = row1 | (col1 << 8) | (row3 << 16) | (col3 << 24);
+            push(S, M);
+          }
+        }
+  return S;
+}
+
+int solve(board B, stack S, int num_pegs, int i1, int i2, ht H, int[] dr, int[] dc)
+{
+  struct two_ints* current = alloc(struct two_ints);
+  current->i1 = i1;
+  current->i2 = i2;
+  current->best_num_pegs = num_pegs;
+  struct two_ints* find = ht_lookup(H, current);
+  if (find != NULL) {
+    return find->best_num_pegs;
+  }
+  stack moves = all_possible_moves(B, dr, dc);
+  if (stack_empty(moves)) {
+    if (num_pegs == 1) {
+      printf("size = %d\n", ht_size(H));
+    }
+    return num_pegs;
+  }
+  while (!stack_empty(moves)) {
+    move M = pop(moves);
+    int row1 = row_start(M);
+    int col1 = col_start(M);
+    int row3 = row_end(M);
+    int col3 = col_end(M);
+    int row2 = (row1 + row3) >> 1;
+    int col2 = (col1 + col3) >> 1;
+    int index1 = (row1<<3)|col1;
+    int index2 = (row2<<3)|col2;
+    int index3 = (row3<<3)|col3;
+    int ni1 = i1;
+    int ni2 = i2;
+    B[index1] = 0;
+    B[index2] = 0;
+    B[index3] = 1;
+    if (index1<32)
+        ni1 ^= (1<<index1);
+    else
+        ni2 ^= (1<<(index1-32));
+    if (index2<32)
+        ni1 ^= (1<<index2);
+    else
+        ni2 ^= (1<<(index2-32));
+    if (index3<32)
+        ni1 ^= (1<<index3);
+    else
+        ni2 ^= (1<<(index3-32));
+    int result = solve(B, S, num_pegs - 1, ni1, ni2, H, dr, dc);
+    current->best_num_pegs = min(current->best_num_pegs, result);
+    B[index1] = 1;
+    B[index2] = 1;
+    B[index3] = 0;
+    if (result == 1) {
+      push(S, M);
+      return 1;
+    }
+  }
+  ht_insert(H, current);
+  return current->best_num_pegs;
+}
+
+bool next_permutation(int[] a)
+{
+  int n = 4;
+  int i = n - 2;
+  while (i >= 0 && a[i] >= a[i+1]) {
+    i--;
+  }
+  if (i < 0) {
+    return false;
+  }
+  int j = n - 1;
+  while (a[j] <= a[i]) {
+    j--;
+  }
+  int temp = a[i];
+  a[i] = a[j];
+  a[j] = temp;
+  int l = i + 1;
+  int r = n - 1;
+  while (l < r) {
+    temp = a[l];
+    a[l] = a[r];
+    a[r] = temp;
+    l++;
+    r--;
+  }
+  return true;
+}
+
+int peg_solve(board B, stack S)
+//@requires is_board(B);
+//@requires num_pegs(B) >= 1;
+//@requires stack_empty(S);
+//@ensures is_board(B);
+//@ensures \result >= 1;
+{
+  int[] DR = alloc_array(int, 4);
+  int[] DC = alloc_array(int, 4);
+  DR[0] = -1; DR[1] = 1; DR[2] = 0; DR[3] = 0;
+  DC[0] = 0; DC[1] = 0; DC[2] = -1; DC[3] = 1;
+  int[] dr = alloc_array(int, 4);
+  int[] dc = alloc_array(int, 4);
+  int[] a = alloc_array(int, 4);
+  a[0] = 0; a[1] = 1; a[2] = 2; a[3] = 3;
+  int i1 = 0;
+  int i2 = 0;
+  ht H = ht_new(40000000);
+  for (int i = 0; i < 32; i++) {
+    i1 |= (max(B[i],0) << i);
+  }
+  for (int i = 32; i < 64; i++) {
+    i2 |= (max(B[i],0) << (i-32));
+  }
+  for (int i = 0; i < 4; i++) {
+    dr[i] = DR[a[i]];
+    dc[i] = DC[a[i]];
+  }
+  printf("%d %d %d %d: %d\n", a[0], a[1], a[2], a[3], solve(B, S, num_pegs(B), i1, i2, H, dr, dc));
+  while(!stack_empty(S))
+    pop(S);
+  while(next_permutation(a)){
+    for (int i = 0; i < 32; i++) {
+      i1 |= (max(B[i],0) << i);
+    }
+    for (int i = 32; i < 64; i++) {
+      i2 |= (max(B[i],0) << (i-32));
+    }
+    H = ht_new(40000000);
+    for (int i = 0; i < 4; i++) {
+      dr[i] = DR[a[i]];
+      dc[i] = DC[a[i]];
+    }
+    printf("%d %d %d %d: %d\n", a[0], a[1], a[2], a[3], solve(B, S, num_pegs(B), i1, i2, H, dr, dc));
+    while(!stack_empty(S))
+      pop(S);
+  }
+  return solve(B, S, num_pegs(B), i1, i2, H, dr, dc);
+}

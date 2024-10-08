@@ -1,0 +1,66 @@
+int tree_height(tree* T)
+//@requires is_ordered(T, NULL, NULL);
+{
+    if (T == NULL) return 0;
+    int left_height = tree_height(T->left);
+    int right_height = tree_height(T->right);
+    if (left_height > right_height)
+        return left_height + 1;
+    else
+        return right_height + 1;
+}
+
+int bst_height(bst B)
+//@requires is_bst(B);
+//@ensures is_bst(B);
+{
+       return tree_height(B->root);
+}
+
+tree* tree_delete(tree* T, key k)
+{
+    if (T == NULL) {   	               // key is not in the tree
+        return NULL;
+    }
+    if (key_compare(k, elem_key(T->data)) < 0) {
+       T->left = tree_delete(T->left, k);
+       return T;
+    } else if (key_compare(k, elem_key(T->data)) > 0) {
+       T->right = tree_delete(T->right, k);
+       return T;
+    } else {      // key is in current tree node T
+        if (T->left == NULL)        // node has only right child
+            return T->right;
+        else if (T->right == NULL)   // node has only left child
+            return T->left;
+        else {         // Node to be deleted has two children
+            if (T->left->right == NULL) {
+                // Replace the data in T with the data
+                // in the left child.
+                T->data = T->left->data;
+                // Replace the left child with its left child.
+                T->left = T->left->left;
+               return T;
+            }
+            else {
+                // Search for the largest child in the
+                // left subtree of T and replace the data
+                // in node T with this data after removing
+                // the largest child in the left subtree.
+                T->data = largest_child(T->left);
+                return T;
+            }
+        }
+    }
+}
+
+elem largest_child(tree* T)
+//@requires T != NULL && T->right != NULL;
+{
+    if (T->right->right == NULL) {
+        elem e = T->right->data;
+        T->right = T->right->left;
+        return e;
+    }
+    return largest_child(T->right);
+}

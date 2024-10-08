@@ -1,0 +1,63 @@
+#use <util>
+
+int quot(int x, int y)
+//@requires y != 0 && !(x == int_min() && y == -1);
+//@ensures \result == x / y;
+{
+    int a = x;
+    int b = y;
+    int sign = 1;
+    int c = 0;
+
+    if (a < 0)
+    {
+        sign *= -1;
+        a = -a;
+    }
+    if (b < 0)
+    {
+        sign *= -1;
+        b = -b;
+    }
+    //@assert a >= 0 && b > 0;
+    
+    for (c = 0; a >= b * (c + 1); c++)
+    //@loop_invariant c >= 0;
+    //@loop_invariant b * c <= a;
+    {}
+
+    //@assert b * c <= a && a < b * (c + 1);
+
+    return c * sign;
+}
+
+int rem(int x, int y)
+//@requires y != 0 && !(x == int_min() && y == -1);
+//@ensures \result == x % y;
+{
+    int a = x;
+    int b = y;
+    int sign = 1;
+    int c = 0;
+    
+    if (a < 0)
+    {
+        sign *= -1;
+        a = -a;
+    }
+    if (b < 0)
+    {
+        b = -b;
+    }
+    //@assert a >= 0 && b > 0;
+    
+    while (a >= b)
+    //@loop_invariant a >= 0;
+    {
+        a -= b;
+    }
+
+    //@assert 0 <= a && a < b;
+
+    return a * sign;
+}

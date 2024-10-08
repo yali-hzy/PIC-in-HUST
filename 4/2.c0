@@ -1,0 +1,52 @@
+int copy_into(int[] source, int i, int n, int[] target, int j)
+//@requires n >= 0;
+//@requires 0 <= i && i + n <= \length(source);
+//@requires 0 <= j && j + n <= \length(target);
+//@ensures (n == 0 && \result == -1) || (n > 0 && \result == j + n - 1);
+{
+    if (n == 0)
+        return -1;
+    for (int k = 0; k < n; k++)
+    //@loop_invariant k >= 0;
+    {
+        target[k + j] = source[k + i];
+    }
+    return j + n - 1;
+}
+
+/**
+To show:
+ - k + j >= 0 ?                 (Line 12, required by indices of target)
+    1. j >= 0                   by Line 4
+    2. k >= 0                   by Line 10
+    3. k + j >= 0               by math on 1, 2.
+ 
+ - k + j < \length(target) ?    (Line 12, required by indices of target)
+    1. k < n                    by Line 9
+    2. k + j < n + j            by math on 1.
+    3. j + n <= \length(target) by Line 4
+    4. k + j < \length(target)  by math on 2, 3.
+
+ - k + i >= 0 ?                 (Line 12, required by indices of source)
+    1. i >= 0                   by Line 3
+    2. k >= 0                   by Line 10
+    3. k + i >= 0               by math on 1, 2.
+ 
+ - k + i < \length(source) ?    (Line 12, required by indices of source)
+    1. k < n                    by Line 9
+    2. k + i < n + i            by math on 1.
+    3. i + n <= \length(source) by Line 3
+    4. k + i < \length(source)  by math on 2, 3.
+
+ - k >= 0 ?                     (Line 10, loop invariant)
+    INIT: k = 0 >= 0            by math on Line 9
+    PRES: k >= 0 is preserved
+        To show: if k >= 0, then k' >= 0
+            1. k' = k + 1               by Line 9
+            2. k >= 0                   assumption
+            3. k + 1 >= 0               by math on 2.
+                only if k != int_max()  by two's compl.
+            4. k < n                    by Line 9
+            5. k != int_max()           by math on 4.
+            6. k' >= 0                  by math on 1, 3, 5.
+*/

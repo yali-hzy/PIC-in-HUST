@@ -1,0 +1,46 @@
+/*
+Problem 2:
+f(0,0);
+*/
+
+// Problem 1:
+
+void detect_multiplication_overflow(int x, int y)
+{
+  int result = x * y;
+  // if x * y is overflow, then the absolute value of x * y becomes smaller than that of xy
+  // because xy is out of range expressed by int
+  if (x != 0 && result / x != y)
+    error("Overflow");
+}
+
+int POW(int b, int e)
+//@requires e >= 0;
+{
+  if (e == 0) return 1;
+  int next_pow = POW(b, e-1);
+  detect_multiplication_overflow(next_pow, b);
+  return next_pow * b;
+}
+
+int f (int x, int y)
+//@requires y >= 0;
+//@ensures POW(x, y) == \result;
+{
+  int b = x;
+  int e = y;
+  int r = 1;
+  while (e > 0)
+  //@loop_invariant e >= 0;
+  //@loop_invariant POW(b, e) * r == POW(x, y);
+  {
+    if (e % 2 == 1) {
+      detect_multiplication_overflow(r, b);
+      r = b * r;
+    }
+    detect_multiplication_overflow(b, b);
+    b = b * b;
+    e = e / 2;
+  }
+  return r;
+}

@@ -1,0 +1,59 @@
+#use <string>
+
+bool all_distinct(string[] A, int n)
+//@requires 0 <= n && n <= \length(A);
+//@requires is_sorted(A, 0, n);
+{
+    if (n <= 1)
+        return true;
+    //@assert n >= 2;
+    if (string_equal(A[n-2], A[n-1]))
+        return false;
+    //@assert gt_seg(A[n-1], A, 0, n-1);
+    return all_distinct(A, n-1);
+}
+
+int count_distinct(string[] A, int n)
+//@requires 0 <= n && n <= \length(A);
+//@requires is_sorted(A, 0, n);
+//@ensures 0 <= \result && \result <= n;
+//@ensures \result < n || \result == n && all_distinct(A, n);
+{
+    if (n <= 1)
+        return n;
+    int distinct = 0;
+    if (!string_equal(A[n-1], A[n-2]))
+    //@assert gt_seg(A[n-1], A, 0, n-1);
+        distinct = 1;
+    return distinct + count_distinct(A, n-1);
+}
+
+string[] remove_duplicates(string[] A, int n)
+//@requires 0 <= n && n <= \length(A);
+//@requires is_sorted(A, 0, n);
+//@ensures \length(\result) == count_distinct(A, n);
+//@ensures is_sorted(\result, 0, \length(\result));
+//@ensures all_distinct(\result, \length(\result));
+{
+    int len = count_distinct(A, n);
+    string[] B = alloc_array(string, len);
+    if (len == 0)
+        return B;
+    //@assert len > 0;
+    B[0] = A[0];
+    int cnt = 1;
+    for (int i = 1; i < n; i++)
+    //@loop_invariant i >= 1;
+    //@loop_invariant cnt >= 1;
+    //@loop_invariant cnt == count_distinct(A, i);
+    //@loop_invariant is_sorted(B, 0, cnt);
+    //@loop_invariant all_distinct(B, cnt);
+        if (!string_equal(A[i-1], A[i]))
+        //@assert gt_seg(A[i], A, 0, i);
+        {
+            B[cnt] = A[i];
+            cnt++;
+        }
+    //@assert cnt == len;
+    return B;
+}

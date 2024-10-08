@@ -1,0 +1,115 @@
+#use <rand>
+#use <util>
+
+int main()
+{
+    // Test #1
+    int n = 0;
+    string[] copy = alloc_array(string, n);
+    string[] Z = alloc_array(string, n);
+    string[] ans = sortcopy(Z, 0, n);
+    //@assert \length(ans) == n;
+
+    // Test #2
+    n = 1;
+    string[] One = alloc_array(string, n);
+    One[0] = "one";
+    copy = alloc_array(string, n);
+    for (int i = 0; i < n; i++)
+        copy[i] = One[i];
+    ans = sortcopy(One, 0, n);
+    //@assert \length(ans) == n;
+    assert(string_equal(ans[0], "one"));
+    for (int i = 0; i < n; i++)
+        assert(string_equal(One[i], copy[i]));
+
+    // Test #3
+    n = 5;
+    string[] Asc = alloc_array(string, n);
+    Asc[0] = "A"; Asc[1] = "C"; Asc[2] = "F"; Asc[3] = "M"; Asc[4] = "X";
+    copy = alloc_array(string, n);
+    for (int i = 0; i < n; i++)
+        copy[i] = Asc[i];
+    ans = sortcopy(Asc, 0, n);
+    //@assert \length(ans) == n;
+    assert(string_equal(ans[0], "A"));
+    assert(string_equal(ans[1], "C"));
+    assert(string_equal(ans[2], "F"));
+    assert(string_equal(ans[3], "M"));
+    assert(string_equal(ans[4], "X"));
+    for (int i = 0; i < n; i++)
+        assert(string_equal(Asc[i], copy[i]));
+
+    // Test #4
+    n = 5;
+    string[] Dec = alloc_array(string, n);
+    Dec[0] = "Y"; Dec[1] = "O"; Dec[2] = "M"; Dec[3] = "G"; Dec[4] = "D";
+    copy = alloc_array(string, n);
+    for (int i = 0; i < n; i++)
+        copy[i] = Dec[i];
+    ans = sortcopy(Dec, 1, 4);
+    //@assert \length(ans) == 3;
+    assert(string_equal(ans[0], "G"));
+    assert(string_equal(ans[1], "M"));
+    assert(string_equal(ans[2], "O"));
+    for (int i = 0; i < n; i++)
+        assert(string_equal(Dec[i], copy[i]));
+
+    // Test #5
+    n = 4;
+    string[] Dup = alloc_array(string, n);
+    Dup[0] = "B"; Dup[1] = "G"; Dup[2] = "B"; Dup[3] = "Z";
+    copy = alloc_array(string, n);
+    for (int i = 0; i < n; i++)
+        copy[i] = Dup[i];
+    ans = sortcopy(Dup, 0, n);
+    //@assert \length(ans) == n;
+    assert(string_equal(ans[0], "B"));
+    assert(string_equal(ans[1], "B"));
+    assert(string_equal(ans[2], "G"));
+    assert(string_equal(ans[3], "Z"));
+    for (int i = 0; i < n; i++)
+        assert(string_equal(Dup[i], copy[i]));
+
+    // Test #6
+    rand_t gen = init_rand(19491001);
+    n = 1000;
+    for (int i = 1; i <= 10; i++)
+    {
+        string[] A = alloc_array(string, n);
+        copy = alloc_array(string, n);
+        for (int j = 0; j < n; j++)
+        {
+            int len = abs(rand(gen))%5+2;
+            char[] chr_arr = alloc_array(char, len);
+            for (int k = 0; k < len - 1; k++)
+                chr_arr[k] = char_chr(abs(rand(gen))%26 + char_ord('A'));
+            chr_arr[len - 1] = '\0';
+            A[j] = string_from_chararray(chr_arr);
+        }
+        for (int j = 1; j <= 5; j++)
+        {
+            for (int k = 0; k < n; k++)
+                copy[k] = A[k];
+            int l = abs(rand(gen)) % (n+1);
+            int r = abs(rand(gen)) % (n+1);
+            if (l > r)
+            {
+                int tmp = l;
+                l = r;
+                r = tmp;
+            }
+            ans = sortcopy(A, l, r);
+            //@assert \length(ans) == r - l;
+            assert(is_sorted(ans, 0, r - l));
+            for (int k = 0; k < n; k++)
+                assert(string_equal(A[k], copy[k]));
+            for (int k = l; k < r; k++)
+            {
+                assert(is_in(A[k], ans, 0, r - l));
+                assert(is_in(ans[k - l], A, l, r));
+            }
+        }
+    }
+    return 0;
+}

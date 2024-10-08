@@ -1,0 +1,54 @@
+#use <conio>
+
+int main()
+{
+    // Test #1
+    int size = 8;
+    int[] freq = alloc_array(int, size);
+    string[] vocab = alloc_array(string, size);
+    string[] copy = alloc_array(string, size);
+    vocab[0] = "burrow";
+    freq[0] = 1;
+    vocab[1] = "ha";
+    freq[1] = 12;
+    vocab[2] = "his";
+    freq[2] = 0;
+    vocab[3] = "is";
+    freq[3] = 0;
+    vocab[4] = "list";
+    freq[4] = 2;
+    vocab[5] = "of";
+    freq[5] = 4;
+    vocab[6] = "out";
+    freq[6] = 1;
+    vocab[7] = "winter";
+    freq[7] = 2;
+    for (int i = 0; i < size; i++)
+        copy[i] = vocab[i];
+    int result = count_vocab(vocab, freq, size, "texts/scotttweet.txt", false);
+    assert(result == 1);
+    for (int i = 0; i < size; i++)
+        assert(string_equal(vocab[i], copy[i]));
+    assert(freq[0] == 2);
+    assert(freq[1] == 12);
+    assert(freq[2] == 1);
+    assert(freq[3] == 1);
+    assert(freq[4] == 2);
+    assert(freq[5] == 5);
+    assert(freq[6] == 2);
+    assert(freq[7] == 2);
+    println("Test #1 Passed");
+
+    // Test #2
+    string_bundle reader = read_words("texts/news_vocab_sorted.txt");
+    size = string_bundle_length(reader);
+    vocab = string_bundle_array(reader);
+    freq = alloc_array(int, size);
+    result = count_vocab(vocab, freq, size, "texts/twitter_1k.txt", false);
+    println("Test #2 Passed");
+
+    // Test #3
+    result = count_vocab(vocab, freq, size, "texts/twitter_200k.txt", true);
+    println("Test #3 Passed");
+    return 0;
+}

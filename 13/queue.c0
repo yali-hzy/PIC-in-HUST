@@ -1,0 +1,39 @@
+/* Stack Interface */
+stack stack_new();
+bool stack_empty(stack S);
+void push(elem e, stack S);
+elem pop(stack S)
+    //@requires !stack_empty(S);
+;
+
+struct queue {
+    stack instack;
+    stack outstack;
+};
+typedef struct queue* queue;
+queue new_queue()
+{
+    queue Q = alloc(struct queue);
+    Q->instack = stack_new();
+    Q->outstack = stack_new();
+    return Q;
+}
+
+bool queue_empty(queue Q)
+{
+    return stack_empty(Q->instack) && stack_empty(Q->outstack);
+}
+
+void enqueue(elem e, queue Q)
+{
+    push(e, Q->instack);
+}
+
+elem dequeue(queue Q)
+//@requires !queue_empty(Q);
+{
+    if (stack_empty(Q->outstack))
+        while(!stack_empty(Q->instack))
+            push(pop(Q->instack), Q->outstack);
+    return pop(Q->outstack);
+}

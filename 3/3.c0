@@ -1,0 +1,12 @@
+int lsr(int x, int l)
+//@requires 0 <= l && l < 32;
+//lsr(x, 1) == ((2^32 + x) % (2^32)) / 2;
+{
+    if (l == 0)
+        return x;
+    x >>= l;
+    int a = (-1) << (32 - l);
+    if (x < 0)
+        x ^= a;
+    return x;
+}
