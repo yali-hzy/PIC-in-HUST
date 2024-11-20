@@ -37,7 +37,7 @@ int binsearch_inclusive(int x, int[ ] A, int n)
 
   - 假设循环不变量成立，证明下次循环时仍成立：
     $$
-    0\le lower \le upper+1<n\\
+    0\le lower \le upper+1 \le n\\
     lower\le mid\le upper\\
     $$
 
@@ -50,7 +50,7 @@ int binsearch_inclusive(int x, int[ ] A, int n)
        &A[lower'-1]<x\ (Line\ 12\ 成立)\\
        &upper' = upper\ (Line\ 13\ 成立)\\
        &lower<mid+1\le upper+1\\
-       &0\le lower< lower'\le upper'+1<n\ (Line\ 11\ 成立)\\
+       &0\le lower< lower'\le upper'+1\le n\ (Line\ 11\ 成立)\\
        \end{aligned}
        $$
 

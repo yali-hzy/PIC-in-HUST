@@ -1,4 +1,9 @@
+*
+!/**/
+!*.*
+
 *.zip
 *.exe
 **/.vscode
 *.tgz
+a.out
